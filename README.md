@@ -15,8 +15,7 @@ A Flask-based email tracking application that monitors your inbox and stores ema
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd mailtracker
+git clone <https://github.com/brkcnr/mail-monitor.git>
 ```
 
 2. Create a virtual environment and install dependencies:
