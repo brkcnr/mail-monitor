@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{{ email.subject }} - Email Tracker{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{{ url_for('web.index') }}" class="text-gray-500 hover:text-primary-600">
+                    <i class="fas fa-home mr-1"></i>Dashboard
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <a href="{{ url_for('web.emails_page') }}" class="text-gray-500 hover:text-primary-600">Emails</a>
+                </div>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+                    <span class="text-gray-700">Email Details</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Email Header -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-primary-50 to-blue-50">
+            <div class="flex justify-between items-start">
+                <div class="flex-1 min-w-0">
+                    <h1 class="text-xl font-semibold text-gray-900 mb-3">{{ email.subject }}</h1>
+                    <div class="flex items-center space-x-4 text-sm text-gray-600">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-user-circle text-primary-500"></i>
+                            <span class="font-medium">From:</span>
+                            <span>{{ email.sender }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 text-right">
+                    <div class="text-sm text-gray-500 mb-2">
+                        <i class="fas fa-calendar-alt mr-1"></i>{{ email.received_date }}
+                    </div>
+                    {% if email.has_attachment %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-paperclip mr-1"></i>{{ attachments|length }} attachment(s)
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Content -->
+        <div class="p-6">
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-3 pb-2 border-b border-gray-200">Email Content</h3>
+                {% if email.body %}
+                    <div class="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                        <div class="whitespace-pre-wrap text-gray-700 leading-relaxed">{{ email.body }}</div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-8 text-gray-500 italic">
+                        <i class="fas fa-file-alt text-2xl mb-2"></i>
+                        <p>No text content available</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Attachments -->
+            {% if attachments %}
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-3 pb-2 border-b border-gray-200 flex items-center">
+                    <i class="fas fa-paperclip mr-2 text-primary-600"></i>
+                    Attachments ({{ attachments|length }})
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for attachment in attachments %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                        <div class="text-center">
+                            <!-- Attachment Icon based on file type -->
+                            <div class="w-12 h-12 mx-auto mb-3 bg-primary-100 rounded-lg flex items-center justify-center">
+                                {% set file_ext = attachment.filename.split('.')[-1].lower() %}
+                                {% if file_ext in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'] %}
+                                    <i class="fas fa-image text-primary-600 text-xl"></i>
+                                {% elif file_ext in ['pdf'] %}
+                                    <i class="fas fa-file-pdf text-red-600 text-xl"></i>
+                                {% elif file_ext in ['doc', 'docx'] %}
+                                    <i class="fas fa-file-word text-blue-600 text-xl"></i>
+                                {% elif file_ext in ['xls', 'xlsx'] %}
+                                    <i class="fas fa-file-excel text-green-600 text-xl"></i>
+                                {% elif file_ext in ['ppt', 'pptx'] %}
+                                    <i class="fas fa-file-powerpoint text-orange-600 text-xl"></i>
+                                {% elif file_ext in ['txt'] %}
+                                    <i class="fas fa-file-alt text-gray-600 text-xl"></i>
+                                {% elif file_ext in ['zip', 'rar', '7z'] %}
+                                    <i class="fas fa-file-archive text-purple-600 text-xl"></i>
+                                {% else %}
+                                    <i class="fas fa-file text-primary-600 text-xl"></i>
+                                {% endif %}
+                            </div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-3 truncate" title="{{ attachment.filename }}">
+                                {{ attachment.filename }}
+                            </h4>
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex flex-col space-y-2">
+                                <!-- View button for viewable files -->
+                                {% if file_ext in ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'pdf', 'txt'] %}
+                                <button data-attachment-id="{{ attachment.id }}" 
+                                        data-attachment-filename="{{ attachment.filename }}"
+                                        onclick="EmailTracker.viewAttachment(this.dataset.attachmentId, this.dataset.attachmentFilename)" 
+                                       class="inline-flex items-center justify-center px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                                    <i class="fas fa-eye mr-1"></i>View
+                                </button>
+                                {% endif %}
+                                
+                                <!-- Download button -->
+                                <a href="{{ url_for('emails.download_attachment', attachment_id=attachment.id) }}" 
+                                   class="inline-flex items-center justify-center px-3 py-1 bg-primary-600 text-white text-sm rounded-md hover:bg-primary-700 transition-colors">
+                                    <i class="fas fa-download mr-1"></i>Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Email Metadata -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-3 pb-2 border-b border-gray-200">Email Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-500">Email ID:</span>
+                            <span class="text-sm text-gray-900 font-mono">{{ email.id }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-500">Message ID:</span>
+                            <span class="text-sm text-gray-900 font-mono truncate ml-2">{{ email.message_id }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-500">Sender:</span>
+                            <span class="text-sm text-gray-900 truncate ml-2">{{ email.sender }}</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-500">Received:</span>
+                            <span class="text-sm text-gray-900">{{ email.received_date }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm font-medium text-gray-500">Has Attachments:</span>
+                            {% if email.has_attachment %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check mr-1"></i>Yes
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    <i class="fas fa-times mr-1"></i>No
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+                <a href="{{ url_for('web.emails_page') }}" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Emails
+                </a>
+                {% if attachments %}
+                    <button onclick="EmailTracker.downloadAllAttachments()" 
+                            class="inline-flex items-center px-4 py-2 bg-primary-600 text-white rounded-md text-sm font-medium hover:bg-primary-700 transition-colors">
+                        <i class="fas fa-download mr-2"></i>Download All Attachments
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attachment Viewer Modal -->
+<div id="attachment-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900" id="attachment-modal-title">Attachment Viewer</h3>
+            <button onclick="EmailTracker.closeAttachmentModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div id="attachment-content" class="max-h-96 overflow-auto">
+            <!-- Attachment content will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<!-- Hidden data for JavaScript -->
+{% if attachments %}
+<script type="application/json" id="attachment-urls">
+[
+    {% for attachment in attachments %}
+    "{{ url_for('emails.download_attachment', attachment_id=attachment.id) }}"{% if not loop.last %},{% endif %}
+    {% endfor %}
+]
+</script>
+{% endif %}
+{% endblock %}

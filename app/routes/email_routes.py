@@ -3,7 +3,7 @@ import io
 from app.services.db import DatabaseService
 from app.models.email_model import Email, Attachment
 
-email_bp = Blueprint('emails', __name__)
+email_bp = Blueprint('emails', __name__, url_prefix='/api')
 db_service = DatabaseService()
 
 @email_bp.route('/emails', methods=['GET'])
@@ -62,6 +62,33 @@ def download_attachment(attachment_id):
             io.BytesIO(content),
             download_name=filename,
             as_attachment=True
+        )
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@email_bp.route('/attachments/<int:attachment_id>/view', methods=['GET'])
+def view_attachment(attachment_id):
+    """View a specific attachment inline (for images, PDFs, etc.)"""
+    try:
+        result = db_service.get_attachment(attachment_id)
+        
+        if result is None:
+            return jsonify({'error': 'Attachment not found'}), 404
+            
+        filename, content = result
+        
+        # Determine content type based on file extension
+        import mimetypes
+        content_type, _ = mimetypes.guess_type(filename)
+        
+        if content_type is None:
+            content_type = 'application/octet-stream'
+        
+        return send_file(
+            io.BytesIO(content),
+            mimetype=content_type,
+            as_attachment=False,
+            download_name=filename
         )
     except Exception as e:
         return jsonify({'error': str(e)}), 500
