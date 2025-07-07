@@ -83,9 +83,9 @@
                                 <th class="text-left py-3 px-4 font-semibold text-gray-700">Attachments</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100">
+                        <tbody class="divide-y divide-gray-100 recent-emails-list">
                             {% for email in recent_emails %}
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="recent-email-item hover:bg-gray-50 transition-colors">
                                 <td class="py-4 px-4">
                                     <div class="flex items-center space-x-3">
                                         <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
@@ -135,18 +135,19 @@
 
 {% block scripts %}
 <script>
-// Auto-refresh stats every 30 seconds
+// Auto-refresh stats every 30 seconds (backup to WebSocket)
 setInterval(function() {
-    fetch('/api/stats')
-        .then(response => response.json())
-        .then(data => {
-            if (!data.error) {
-                document.getElementById('total-emails').textContent = data.total_emails;
-                document.getElementById('emails-with-attachments').textContent = data.emails_with_attachments;
-                document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString();
-            }
-        })
-        .catch(error => console.error('Error fetching stats:', error));
+    // Only fetch if WebSocket is not connected
+    if (!window.socket || !window.socket.connected) {
+        fetch('/stats')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.error) {
+                    EmailTracker.updateStatsDisplay(data);
+                }
+            })
+            .catch(error => console.error('Error fetching stats:', error));
+    }
 }, 30000);
 </script>
 {% endblock %}

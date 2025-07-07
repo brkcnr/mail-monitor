@@ -8,6 +8,9 @@ load_dotenv()
 class Config:
     """Application configuration class"""
     
+    # Security
+    SECRET_KEY = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
+    
     # Database
     DATABASE_PATH = 'emails.db'
     
@@ -37,5 +40,8 @@ class Config:
         
         if missing_vars:
             raise ValueError(f"Missing required environment variables: {', '.join(missing_vars)}")
+        
+        if cls.SECRET_KEY == 'dev-key-change-in-production':
+            print("⚠️  Warning: Using default secret key. Set SECRET_KEY environment variable for production.")
         
         return True

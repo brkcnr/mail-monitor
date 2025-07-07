@@ -94,7 +94,7 @@ def email_detail(email_id):
         return redirect(url_for('web.emails_page'))
 
 @web_bp.route('/stats')
-def api_stats():
+def get_stats():
     """API endpoint for live stats (for AJAX updates)"""
     try:
         email_rows = db_service.get_all_emails()

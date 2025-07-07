@@ -3,3 +3,6 @@ python-dotenv==1.0.0
 SQLAlchemy==2.0.23
 email-validator==2.1.0.post1
 imap-tools==1.5.0
+flask-socketio==5.3.6
+gevent==23.9.1
+gevent-websocket==0.10.1
