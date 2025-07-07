@@ -1,33 +1,34 @@
 # Email Tracker
 
-Flask-based email tracking application that monitors your inbox and provides a web interface for viewing emails and attachments. The application features real-time email monitoring, attachment handling and both web UI and REST API endpoints.
+Flask-based email tracking application that monitors your inbox and provides a web interface for viewing emails and attachments. The application features real-time email monitoring with WebSocket support and attachment handling for both web UI and REST API endpoints.
 
 ## Features
 
 ### Core Functionality
-- **Real-time Email Monitoring** - Automatically tracks new emails using IMAP
-- **Web Interface** - Modern, responsive dashboard built with Tailwind CSS
-- **Attachment Support** - Download and preview attachments (images, PDFs, text files)
-- **Database Storage** - SQLite database for persistent email storage
-- **Duplicate Prevention** - Intelligent handling of duplicate emails
+- **Real-time Email Monitoring** - Automatically tracks new emails using IMAP with live WebSocket updates
+- **Modern Web Interface** - Responsive dashboard built with Tailwind CSS and real-time notifications
+- **Attachment Support** - Download and preview attachments (images, PDFs, text files) with inline viewer
+- **Database Storage** - SQLite database for persistent email storage with duplicate prevention
+- **Live Statistics** - Real-time dashboard updates showing email counts and monitoring status
 - **Timezone Support** - Configurable timezone (default: GMT+3)
 
 ### Web Interface
-- **Dashboard** - Overview with email statistics and recent emails
-- **Email List** - Searchable and filterable email listing
-- **Email Details** - Full email content view with attachment management
-- **Attachment Viewer** - In-browser preview for supported file types
-- **Responsive Design** - Works on desktop, tablet, and mobile devices
+- **Dashboard** - Live overview with email statistics and recent emails
+- **Email List** - Searchable and filterable email listing with real-time additions
+- **Email Details** - Full email content view with attachment management and preview
+- **Attachment Viewer** - In-browser preview for images, PDFs, and text files
+- **Responsive Design** - Works seamlessly on desktop, tablet, and mobile devices
 
 ### API Endpoints
 - **REST API** - Complete programmatic access to email data
 - **Health Monitoring** - Application health check endpoint
-- **File Downloads** - Direct attachment download capabilities
+- **File Downloads** - Direct attachment download and viewing capabilities
+- **Statistics API** - Live statistics endpoint for external integrations
 
 ## Requirements
 
 - Python 3.8+
-- Gmail account with App Password (or other IMAP-enabled email)
+- Gmail account with App Password (or other IMAP-enabled email provider)
 
 ## Installation
 
@@ -56,6 +57,7 @@ EMAIL_ADDRESS=your.email@gmail.com
 EMAIL_PASSWORD=your-app-password
 IMAP_SERVER=imap.gmail.com
 IMAP_PORT=993
+SECRET_KEY=your-secret-key-here
 ```
 
 **Important**: For Gmail, use an App Password instead of your regular password:
@@ -64,66 +66,37 @@ IMAP_PORT=993
 3. Generate a new app password for "Mail"
 4. Use this password in the `.env` file
 
+**Generate Secret Key**: Run `python -c "import secrets; print(secrets.token_hex(32))"` to generate a secure secret key.
+
 ### 5. Run the Application
 ```bash
 python app.py
 ```
 
-The application will start on `http://localhost:5000`
+The application will start on `http://localhost:5000` with real-time WebSocket support enabled.
 
 ## Usage
 
 ### Web Interface
 
-1. **Dashboard** (`/`) - View email statistics and recent emails
-2. **Email List** (`/emails`) - Browse all emails with search and filter options
-3. **Email Details** (`/emails/<id>`) - View full email content and attachments
+1. **Dashboard** (`/`) - Real-time view of email statistics and recent emails with live updates
+2. **Email List** (`/emails`) - Browse all emails with search, filter, and real-time new email notifications
+3. **Email Details** (`/emails/<id>`) - View full email content with attachment preview and download
 
 ### API Endpoints
 
 #### Web Routes
-- `GET /` - Dashboard page
-- `GET /emails` - Email list page
-- `GET /emails/<id>` - Email detail page
-- `GET /stats` - Live statistics (AJAX endpoint)
+- `GET /` - Dashboard page with live statistics
+- `GET /emails` - Email list page with real-time updates
+- `GET /emails/<id>` - Email detail page with attachment viewer
+- `GET /stats` - Live statistics endpoint (JSON)
 
 #### API Routes
 - `GET /api/emails` - List all emails (JSON)
 - `GET /api/emails/<id>/attachments` - List email attachments (JSON)
 - `GET /api/attachments/<id>/download` - Download attachment
 - `GET /api/attachments/<id>/view` - View attachment inline
-- `GET /api/health` - Health check
-
-## Configuration
-
-### .env Settings
-- `EMAIL_ADDRESS` - Your email address
-- `EMAIL_PASSWORD` - Your email password or app password
-- `IMAP_SERVER` - IMAP server (default: imap.gmail.com)
-- `IMAP_PORT` - IMAP port (default: 993)
-
-### Application Settings
-- `CHECK_INTERVAL` - Email check frequency in seconds (default: 60)
-- `MAX_RETRIES` - Maximum connection retry attempts (default: 3)
-- `RETRY_DELAY` - Delay between retries in seconds (default: 60)
-- `TIMEZONE` - Application timezone (default: GMT+3)
-- `DEBUG` - Flask debug mode (default: True)
-- `PORT` - Application port (default: 5000)
-
-## Development
-
-### Architecture
-- **Flask Application Factory** - Modular app creation
-- **Blueprint Organization** - Separate API and web routes
-- **Service Layer** - Business logic separation
-- **Data Models** - Type-safe data structures
-- **Context Managers** - Proper resource handling
-
-### Adding Features
-1. **New Routes** - Add to appropriate blueprint in `app/routes/`
-2. **Database Changes** - Modify `app/services/db.py`
-3. **Frontend** - Update templates in `app/templates/`
-4. **JavaScript** - Add functionality to `app/static/app.js`
+- `GET /api/health` - Health check endpoint
 
 ## License
 
@@ -139,17 +112,21 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Future Enhancements
 
-- [ ] Email composition and sending
-- [ ] Advanced search with date ranges
-- [ ] Email labeling and categorization
-- [ ] Export functionality (CSV, PDF)
-- [ ] Multiple email account support
-- [ ] Email templates and automation
-- [ ] Advanced attachment preview (Office docs)
-- [ ] Email statistics and analytics
-- [ ] User authentication and multi-user support
-- [ ] Email archiving and cleanup tools
+- Email composition and sending capabilities
+- Advanced search with date ranges and content filtering
+- Email labeling and categorization system
+- Export functionality (CSV, PDF, MBOX formats)
+- Multiple email account support with account switching
+- Email templates and automation rules
+- Advanced attachment preview (Office documents, videos)
+- Email statistics and analytics dashboard
+- User authentication and multi-user support
+- Email archiving and automated cleanup tools
+- Mobile application with push notifications
+- Integration with external services (Slack, Discord)
+- Advanced real-time features (typing indicators, presence)
+- Email threading and conversation grouping
 
 ---
 
-**Note**: This application is designed for personal use and development purposes. Ensure you comply with your email provider's terms of service and applicable privacy regulations when using this software.
+**Note**: This application is designed for personal use and development purposes. Ensure you comply with your email provider's terms of service and applicable privacy regulations when using this software. The real-time features require a modern web browser with WebSocket support for optimal functionality.
